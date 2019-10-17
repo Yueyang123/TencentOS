@@ -1,5 +1,6 @@
 #include <tos.h>
 
+//获取当前最高优先级
 __STATIC__ k_prio_t readyqueue_prio_highest_get(void)
 {
     uint32_t *tbl;
@@ -64,6 +65,7 @@ __KERNEL__ k_task_t *readyqueue_highest_ready_task_get(void)
     return TOS_LIST_FIRST_ENTRY(task_list, k_task_t, pend_list);
 }
 
+//创建一个链表
 __KERNEL__ void readyqueue_init(void)
 {
     uint8_t i;

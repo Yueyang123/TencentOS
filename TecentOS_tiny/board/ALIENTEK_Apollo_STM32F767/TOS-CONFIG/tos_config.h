@@ -3,12 +3,13 @@
 
 #include "stm32f7xx.h"
 
+//支持的最大任务数
 #define TOS_CFG_TASK_PRIO_MAX       10u
 
 #define TOS_CFG_ROUND_ROBIN_EN      1u
 
 #define TOS_CFG_OBJECT_VERIFY_EN       0u
-
+//事件使能
 #define TOS_CFG_EVENT_EN            1u
 
 #define TOS_CFG_MMBLK_EN            1u
@@ -18,7 +19,7 @@
 #define TOS_CFG_MMHEAP_POOL_SIZE    0x1000
 
 #define TOS_CFG_MUTEX_EN            1u
-
+//队列使能
 #define TOS_CFG_QUEUE_EN            1u
 
 #define TOS_CFG_TIMER_EN            1u

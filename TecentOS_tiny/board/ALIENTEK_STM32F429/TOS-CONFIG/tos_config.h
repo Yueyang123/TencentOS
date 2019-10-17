@@ -9,7 +9,7 @@
 #define TOS_CFG_ROUND_ROBIN_EN      1u
 
 #define TOS_CFG_OBJECT_VERIFY_EN       0u
-
+//事件使能
 #define TOS_CFG_EVENT_EN            1u
 
 #define TOS_CFG_MMBLK_EN            1u
@@ -21,7 +21,7 @@
 #define TOS_CFG_TASK_STACK_DRAUGHT_DEPTH_DETACT_EN  1u
 
 #define TOS_CFG_MUTEX_EN            1u
-
+//队列使能
 #define TOS_CFG_QUEUE_EN            1u
 
 #define TOS_CFG_TIMER_EN            1u

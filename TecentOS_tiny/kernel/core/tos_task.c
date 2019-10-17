@@ -1,5 +1,6 @@
 #include <tos.h>
 
+//复位任务
 __STATIC_INLINE__ void task_reset(k_task_t *task)
 {
 #if TOS_CFG_OBJECT_VERIFY_EN > 0u
@@ -22,7 +23,7 @@ __STATIC_INLINE__ void task_reset(k_task_t *task)
     task->msg_size      = 0;
 #endif
 }
-
+//退出任务
 __STATIC__ void task_exit(void)
 {
     tos_task_destroy(K_NULL);
@@ -54,7 +55,7 @@ __STATIC__ void task_mutex_release(k_task_t *task)
     }
 }
 #endif
-
+//创建任务
 __API__ k_err_t tos_task_create(k_task_t *task,
                                             char *name,
                                             k_task_entry_t entry,
@@ -64,6 +65,7 @@ __API__ k_err_t tos_task_create(k_task_t *task,
                                             size_t stk_size,
                                             k_timeslice_t timeslice)
 {
+//进行初始化
     TOS_CPU_CPSR_ALLOC();
 
     TOS_IN_IRQ_CHECK();
@@ -71,11 +73,11 @@ __API__ k_err_t tos_task_create(k_task_t *task,
     TOS_PTR_SANITY_CHECK(task);
     TOS_PTR_SANITY_CHECK(entry);
     TOS_PTR_SANITY_CHECK(stk_base);
-
+//参数检查
     if (unlikely(stk_size < sizeof(cpu_context_t))) {
         return K_ERR_TASK_STK_SIZE_INVALID;
     }
-
+//不允许有和空闲任务优先级一样的任务
     if (unlikely(prio == K_TASK_PRIO_IDLE && !knl_is_idle(task))) {
         return K_ERR_TASK_PRIO_INVALID;
     }
@@ -88,7 +90,7 @@ __API__ k_err_t tos_task_create(k_task_t *task,
 #if TOS_CFG_OBJECT_VERIFY_EN > 0u
     knl_object_init(&task->knl_obj, KNL_OBJ_TYPE_TASK);
 #endif
-
+//向任务控制块传参
     task->sp        = cpu_task_stk_init((void *)entry, arg, (void *)task_exit, stk_base, stk_size);
     task->entry     = entry;
     task->arg       = arg;
@@ -99,7 +101,7 @@ __API__ k_err_t tos_task_create(k_task_t *task,
 
 #if TOS_CFG_ROUND_ROBIN_EN > 0u
     task->timeslice_reload = timeslice;
-
+//如果时间片大小为0的话，将使用默认大小似乎是100毫秒
     if (timeslice == (k_timeslice_t)0u) {
         task->timeslice = k_robin_default_timeslice;
     } else {
@@ -109,7 +111,7 @@ __API__ k_err_t tos_task_create(k_task_t *task,
 
     TOS_CPU_INT_DISABLE();
     task_state_set_ready(task);
-    readyqueue_add_tail(task);
+    readyqueue_add_tail(task);//向就绪任务链表添加
     TOS_CPU_INT_ENABLE();
 
     if (tos_knl_is_running()) {
@@ -187,7 +189,7 @@ __API__ void tos_task_yield(void)
     TOS_CPU_INT_ENABLE();
     knl_sched();
 }
-
+//改变任务优先级
 __API__ k_err_t tos_task_prio_change(k_task_t *task, k_prio_t prio_new)
 {
     TOS_CPU_CPSR_ALLOC();
@@ -270,13 +272,13 @@ __API__ k_err_t tos_task_suspend(k_task_t *task)
         return K_ERR_TASK_SUSPEND_IDLE;
     }
 
-    if (unlikely(knl_is_self(task)) && knl_is_sched_locked()) { // if not you, who?
+    if (unlikely(knl_is_self(task)) && knl_is_sched_locked()) { // if not you, who?如果不是你那还是谁，（你们是不是挺无聊，写这个玩意干什么）
         return K_ERR_SCHED_LOCKED;
     }
 
     TOS_CPU_INT_DISABLE();
 
-    if (task_state_is_ready(task)) { // kill the good kid
+    if (task_state_is_ready(task)) { // kill the good kid（把好孩子干掉）
         readyqueue_remove(task);
     }
     task_state_set_suspended(task);
@@ -312,7 +314,7 @@ __API__ k_err_t tos_task_resume(k_task_t *task)
     }
 
     task_state_reset_suspended(task);
-    if (task_state_is_ready(task)) { // we are good kid now
+    if (task_state_is_ready(task)) { // we are good kid now（我们现在是好孩子了）
         readyqueue_add(task);
     }
 

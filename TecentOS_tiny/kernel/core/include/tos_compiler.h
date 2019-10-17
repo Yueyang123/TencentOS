@@ -1,7 +1,7 @@
 #ifndef _TOS_COMPILER_H_
 #define  _TOS_COMPILER_H_
 
-// function with __API__ prefix, api for user
+// function with __API__ prefix, api for user表明这个函数是提供给使用者的，只是一个标志位没有实际作用
 #define __API__
 
 // function with __KERNEL__ prefix, only for kernel
@@ -16,6 +16,7 @@
 // function with __PORT__ is architecture depended
 #define __PORT__
 
+//对于不同的编译器定义一些不知道什么的东西
 /*------------------ RealView Compiler -----------------*/
 #if defined(__CC_ARM)
 

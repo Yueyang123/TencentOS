@@ -1,13 +1,13 @@
 #include <tos.h>
-
+//内核初始化
 __API__ k_err_t tos_knl_init(void)
 {
     k_err_t err;
-
+//初始化CPU
     cpu_init();
-
+//初始化任务队列
     readyqueue_init();
-
+//初始化堆
 #if TOS_CFG_MMHEAP_EN > 0
     mmheap_init(k_mmheap_pool, TOS_CFG_MMHEAP_POOL_SIZE);
 #endif
@@ -20,7 +20,7 @@ __API__ k_err_t tos_knl_init(void)
     if (err != K_ERR_NONE) {
         return err;
     }
-
+//初始化软定时器
 #if TOS_CFG_TIMER_EN > 0
     err = timer_init();
     if (err != K_ERR_NONE) {
@@ -39,8 +39,10 @@ __API__ k_err_t tos_knl_init(void)
     return K_ERR_NONE;
 }
 
+//初始化内核中断处理
 __API__ void tos_knl_irq_enter(void)
 {
+    //如果内核正在运行清直接滚蛋
     if (!tos_knl_is_running()) {
         return;
     }
@@ -54,6 +56,7 @@ __API__ void tos_knl_irq_enter(void)
 
 __API__ void tos_knl_irq_leave(void)
 {
+    //离开中断调用
     TOS_CPU_CPSR_ALLOC();
 
     if (!tos_knl_is_running()) {
@@ -87,7 +90,7 @@ __API__ void tos_knl_irq_leave(void)
     cpu_irq_context_switch();
     TOS_CPU_INT_ENABLE();
 }
-
+//上调度锁
 __API__ k_err_t tos_knl_sched_lock(void)
 {
     TOS_CPU_CPSR_ALLOC();
@@ -107,7 +110,7 @@ __API__ k_err_t tos_knl_sched_lock(void)
     TOS_CPU_INT_ENABLE();
     return K_ERR_NONE;
 }
-
+//取消调度锁
 __API__ k_err_t tos_knl_sched_unlock(void)
 {
     TOS_CPU_CPSR_ALLOC();
@@ -130,6 +133,7 @@ __API__ k_err_t tos_knl_sched_unlock(void)
     return K_ERR_NONE;
 }
 
+//运行内核
 __API__ k_err_t tos_knl_start(void)
 {
     if (tos_knl_is_running()) {
@@ -139,7 +143,7 @@ __API__ k_err_t tos_knl_start(void)
     k_next_task = readyqueue_highest_ready_task_get();
     k_curr_task = k_next_task;
     k_knl_state = KNL_STATE_RUNNING;
-    cpu_sched_start();
+    cpu_sched_start();//开启任务调度
 
     return K_ERR_NONE;
 }
@@ -249,7 +253,7 @@ __STATIC__ void knl_idle_entry(void *arg)
 #endif
     }
 }
-
+//这似乎是一个空闲任务
 __KERNEL__ k_err_t knl_idle_init(void)
 {
     return tos_task_create(&k_idle_task, "idle",

@@ -58,10 +58,12 @@ __API__ void tos_cpu_cpsr_restore(cpu_cpsr_t cpsr)
 {
     port_cpsr_restore(cpsr);
 }
-
+//初始化化CPU
 __KERNEL__ void cpu_init(void)
 {
+    //计算不知道什么周期
     k_cpu_cycle_per_tick = TOS_CFG_CPU_CLOCK / k_cpu_tick_per_second;
+    //初始化不知道什么时钟
     cpu_systick_init(k_cpu_cycle_per_tick);
 
 #if (TOS_CFG_CPU_HRTIMER_EN > 0)
@@ -173,7 +175,7 @@ __KERNEL__ void cpu_standby_mode_enter(void)
 }
 
 #endif /* TOS_CFG_PWR_MGR_EN */
-
+//任务堆栈初始化
 __KERNEL__ k_stack_t *cpu_task_stk_init(void *entry,
                                               void *arg,
                                               void *exit,

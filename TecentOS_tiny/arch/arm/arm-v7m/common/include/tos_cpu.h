@@ -58,7 +58,7 @@ __KERNEL__ void         cpu_irq_context_switch(void);
 __KERNEL__ k_err_t cpu_task_stack_draught_depth(k_stack_t *stk_base, size_t stk_size, int *depth);
 
 #endif
-
+//任务堆栈初始化
 __KERNEL__ k_stack_t   *cpu_task_stk_init(void *entry,
                                                           void *arg,
                                                           void *exit,
@@ -105,7 +105,7 @@ __KERNEL__ void         cpu_fault_diagnosis(void);
 
 #endif
 
-/* Allocates CPU status register word. */
+/* Allocates CPU status register word. 改变CPU的状态字*/
 #define TOS_CPU_CPSR_ALLOC()    cpu_cpsr_t cpu_cpsr = (cpu_cpsr_t)0u
 
 /* Save CPU status word & disable interrupts.*/

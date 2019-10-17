@@ -1,6 +1,8 @@
 #include <string.h>
 #include "cmsis_os.h"
 
+//这个文件在内核的基础上做了一些应用的扩展，使RTOS更加符合标准
+
 static k_prio_t priority_cmsis2knl(osPriority prio)
 {
     if (prio == osPriorityError) {
@@ -85,6 +87,8 @@ osThreadId osThreadCreate(const osThreadDef_t *thread_def, void *argument)
  * @brief Return the thread ID of the current running thread.
  * @return thread ID for reference by other functions or NULL in case of error.
  */
+
+//获取当前运行线程ID
 osThreadId osThreadGetId(void)
 {
     return k_curr_task;
@@ -106,6 +110,7 @@ osStatus osThreadTerminate(osThreadId thread_id)
  * @param[in]   priority    new priority value for the thread function.
  * @return status code that indicates the execution status of the function.
  */
+//设置线程优先级
 osStatus osThreadSetPriority(osThreadId thread_id, osPriority priority)
 {
     return errno_knl2cmsis(tos_task_prio_change((k_task_t *)thread_id, priority_cmsis2knl(priority)));
@@ -116,6 +121,7 @@ osStatus osThreadSetPriority(osThreadId thread_id, osPriority priority)
  * @param[in]   thread_id   thread ID obtained by \ref osThreadCreate or \ref osThreadGetId.
  * @return current priority value of the thread function.
  */
+//获取线程优先级
 osPriority osThreadGetPriority(osThreadId thread_id)
 {
     if (!thread_id) {
@@ -132,6 +138,7 @@ osPriority osThreadGetPriority(osThreadId thread_id)
  * @param[in]   millisec    time delay value
  * @return status code that indicates the execution status of the function.
  */
+//调用延时函数
 osStatus osDelay(uint32_t millisec)
 {
     k_tick_t delay;
@@ -153,6 +160,8 @@ osStatus osDelay(uint32_t millisec)
  * @param[in]   argument    argument to the timer call back function.
  * @return timer ID for reference by other functions or NULL in case of error.
  */
+
+//创建定时器
 osTimerId osTimerCreate(const osTimerDef_t *timer_def, os_timer_type type, void *argument)
 {
     k_err_t err;
@@ -177,6 +186,7 @@ osTimerId osTimerCreate(const osTimerDef_t *timer_def, os_timer_type type, void 
  * @param[in]   millisec    time delay value of the timer.
  * @return status code that indicates the execution status of the function.
  */
+//开定时器
 osStatus osTimerStart(osTimerId timer_id, uint32_t millisec)
 {
     k_timer_t *timer;
@@ -206,6 +216,7 @@ osStatus osTimerStart(osTimerId timer_id, uint32_t millisec)
  * @param[in]   timer_id    timer ID obtained by \ref osTimerCreate.
  * @return status code that indicates the execution status of the function.
  */
+//关定时器
 osStatus osTimerStop(osTimerId timer_id)
 {
     return errno_knl2cmsis(tos_timer_stop((k_timer_t *)timer_id));
@@ -355,6 +366,7 @@ osStatus osSemaphoreDelete(osSemaphoreId semaphore_id)
  * @param[in]   pool_def    memory pool definition referenced with \ref osPool.
  * @return memory pool ID for reference by other functions or NULL in case of error.
  */
+//创建内存池
 osPoolId osPoolCreate(const osPoolDef_t *pool_def)
 {
     k_err_t err;

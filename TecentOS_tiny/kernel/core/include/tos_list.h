@@ -1,6 +1,6 @@
 #ifndef _TOS_LIST_H_
 #define  _TOS_LIST_H_
-
+//这是一个双向链表
 typedef struct k_list_node_st {
     struct k_list_node_st *next;
     struct k_list_node_st *prev;
@@ -36,6 +36,7 @@ typedef struct k_list_node_st {
             curr != (list); \
             curr = next, next = curr->prev)
 
+//链表添加节点
 __STATIC_INLINE__ void _list_add(k_list_t *node, k_list_t *prev, k_list_t *next)
 {
     next->prev = node;
@@ -43,7 +44,7 @@ __STATIC_INLINE__ void _list_add(k_list_t *node, k_list_t *prev, k_list_t *next)
     node->prev = prev;
     prev->next = node;
 }
-
+//链表删除节点
 __STATIC_INLINE__ void _list_del(k_list_t *prev, k_list_t *next)
 {
     next->prev = prev;
@@ -54,7 +55,7 @@ __STATIC_INLINE__ void _list_del_entry(k_list_t *entry)
 {
     _list_del(entry->prev, entry->next);
 }
-
+//初始一个链表
 __API__ __STATIC_INLINE__ void tos_list_init(k_list_t *list)
 {
     list->next = list;

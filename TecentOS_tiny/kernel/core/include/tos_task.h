@@ -2,7 +2,7 @@
 #define  _TOS_TASK_H_
 
 // task state is just a flag, indicating which manager list we are in.
-
+//TOS中的任务状态
 // ready to schedule
 // a task's pend_list is in readyqueue
 #define K_TASK_STATE_READY                (k_task_state_t)0x0000
@@ -46,57 +46,51 @@ typedef void (*k_task_entry_t)(void *arg);
 
 /**
  * task control block
+ * 任务控制块
  */
 typedef struct k_task_st {
-    k_stack_t          *sp;                 /**< task stack pointer. This lady always comes first, we use her in port_s.S for context switch. */
+    k_stack_t          *sp;                 /**< 任务栈指针,用于切换上下文*/
 
 #if TOS_CFG_OBJECT_VERIFY_EN > 0u
-    knl_obj_t           knl_obj;            /**< just for verification, test whether current object is really a task. */
+    knl_obj_t           knl_obj;            /**< 只是为了验证，测试当前对象是否真的是一项任务。*/
 #endif
 
-    char               *name;               /**< task name */
-    k_task_entry_t      entry;              /**< task entry */
-    void               *arg;                /**< argument for task entry */
-    k_task_state_t      state;              /**< just state */
-    k_prio_t            prio;               /**< just priority */
+    char               *name;               /**< 任务名称 */
+    k_task_entry_t      entry;              /**< 任务主体 */
+    void               *arg;                /**< 任务主体形参 */
+    k_task_state_t      state;              /**< 任务状态 */
+    k_prio_t            prio;               /**< 任务优先级 */
 
-    k_stack_t          *stk_base;           /**< task stack base address */
-    size_t              stk_size;           /**< stack size of the task */
+    k_stack_t          *stk_base;           /**< 任务栈基地址 */
+    size_t              stk_size;           /**< 任务栈大小 */
 
-    k_tick_t            tick_expires;       /**< if we are in k_tick_list, how much time will we wait for? */
+    k_tick_t            tick_expires;       /**< 任务阻塞的时间 */
 
-    k_list_t            tick_list;          /**< list for hooking us to the k_tick_list */
-    k_list_t            pend_list;          /**< when we are ready, our pend_list is in readyqueue; when pend, in a certain pend object's list. */
-
+    k_list_t            tick_list;          /**< 延时列表 */
+    k_list_t            pend_list;          /**< 就绪、等待列表 */
+//如果使能了互斥量
 #if TOS_CFG_MUTEX_EN > 0u
-    k_list_t            mutex_own_list;     /**< the list hold all the mutex we own.
-                                                When we die(tos_task_destroy), we have an obligation to wakeup all the task pending for those mutexs we own;
-                                                if not, those pending tasks may never get a change to wakeup. */
-    k_prio_t            prio_pending;       /*< when tos_task_prio_change called, we may be just the owner of a mutex.
-                                                to avoid PRIORITY INVERSION, must make sure our priority is higher than any one who is pending for
-                                                the mutex we hold. So, if the prio_new of tos_task_prio_change is not appropriate
-                                                (may against the principle of PRIORITY INVERSION), we just mark the prio_new here, do the real priority
-                                                change in the right time(mutex_old_owner_release) later. */
+    k_list_t            mutex_own_list;     /**< 任务拥有的互斥量 */
+    k_prio_t            prio_pending;       /*< 用于记录持有互斥量的任务初始优先级，在优先级继承中使用 */
 #endif
 
-    pend_obj_t         *pending_obj;       /**< if we are pending, which pend object's list we are in? */
-    pend_state_t        pend_state;         /**< why we wakeup from a pend */
-
+    pend_obj_t         *pending_obj;       /**< 记录任务此时挂载到的列表 */
+    pend_state_t        pend_state;         /**< 等待被唤醒的原因（状态） */
+//如果使能了时间片调度算法
 #if TOS_CFG_ROUND_ROBIN_EN > 0u
-    k_timeslice_t       timeslice_reload;   /**< if current time slice is used up, use time_slice_reload to reload our time slice */
-    k_timeslice_t       timeslice;          /**< how much time slice left for us? */
+    k_timeslice_t       timeslice_reload;   /**< 时间片初始值（重装载值） */
+    k_timeslice_t       timeslice;          /**< 剩余时间片 */
 #endif
-
+//如果使能了消息
 #if TOS_CFG_MSG_EN > 0u
-    void               *msg_addr;           /**< if we pend a queue successfully, our msg_addr and msg_size will be set by the queue poster */
-    size_t              msg_size;
+    void               *msg_addr;           /**< 保存接收到的消息 */
+    size_t              msg_size;			/**< 保存接收到的消息大小 */
 #endif
-
+//如果使能了事件
 #if TOS_CFG_EVENT_EN > 0u
-    k_opt_t             opt_event_pend;     /**< if we are pending an event, what's the option for the pending(TOS_OPT_EVENT_PEND_*)? */
-    k_event_flag_t      flag_expect;        /**< if we are pending an event, what event flag are we pending for ? */
-    k_event_flag_t     *flag_match;         /**< if we pend an event successfully, flag_match will be set by the event poster, and will be returned
-                                                    by tos_event_pend to the caller */
+    k_opt_t             opt_event_pend;     /**< 等待事件的的操作类型：TOS_OPT_EVENT_PEND_ANY 、 TOS_OPT_EVENT_PEND_ALL */
+    k_event_flag_t      flag_expect;        /**< 期待发生的事件 */
+    k_event_flag_t     *flag_match;         /**< 等待到的事件 */
 #endif
 } k_task_t;
 
@@ -121,6 +115,7 @@ typedef struct k_task_st {
  * @retval  #K_ERR_TASK_PRIO_INVALID        priority is invalid.
  * @retval  #K_ERR_NONE                     return successfully.
  */
+//任务创建函数
 __API__ k_err_t tos_task_create(k_task_t *task,
                                             char *name,
                                             k_task_entry_t entry,
@@ -133,7 +128,7 @@ __API__ k_err_t tos_task_create(k_task_t *task,
 /**
  * @brief Destroy a task.
  * delete a task.
- *
+ *删除任务函数
  * @attention None
  *
  * @param[in]   task        pointer to the handler of the task to be deleted.
@@ -147,7 +142,7 @@ __API__ k_err_t tos_task_destroy(k_task_t *task);
 /**
  * @brief Delay current task for ticks.
  * Delay for a specified amount of ticks.
- *
+ *延期任务
  * @attention None
  *
  * @param[in]   delay       amount of ticks to delay.
@@ -161,7 +156,7 @@ __API__ k_err_t tos_task_delay(k_tick_t delay);
 /**
  * @brief Resume task from delay.
  * Resume a delayed task from delay.
- *
+ *取消延期任务
  * @attention None
  *
  * @param[in]   task        the pointer to the handler of the task.
@@ -176,7 +171,7 @@ __API__ k_err_t tos_task_delay_abort(k_task_t *task);
 /**
  * @brief Suspend a task.
  * Bring a task to sleep.
- *
+ *挂起任务函数
  * @attention None
  *
  * @param[in]   task        pointer to the handler of the task to be resume.
@@ -190,7 +185,7 @@ __API__ k_err_t tos_task_suspend(k_task_t *task);
 /**
  * @brief Resume a task.
  * Bring a task to run.
- *
+ *恢复任务函数
  * @attention None
  *
  * @param[in]   task        pointer to the handler of the task to be resume.
@@ -204,7 +199,7 @@ __API__ k_err_t tos_task_resume(k_task_t *task);
 /**
  * @brief Change task priority.
  * Change a priority of the task.
- *
+ *改变任务优先级
  * @attention None
  *
  * @param[in]   task        pointer to the handler of the task to be resume.
@@ -247,6 +242,9 @@ __API__ k_err_t tos_task_stack_draught_depth(k_task_t *task, int *depth);
 
 #endif
 
+//任务状态判断函数
+//通过与tast_>state取与获得
+
 __KERNEL__ __STATIC_INLINE__ int task_state_is_ready(k_task_t *task)
 {
     return task->state == K_TASK_STATE_READY;
@@ -266,6 +264,8 @@ __KERNEL__ __STATIC_INLINE__ int task_state_is_suspended(k_task_t *task)
 {
     return task->state & K_TASK_STATE_SUSPENDED;
 }
+
+//改变任务状态函数
 
 __KERNEL__ __STATIC_INLINE__ void task_state_reset_pending(k_task_t *task)
 {
